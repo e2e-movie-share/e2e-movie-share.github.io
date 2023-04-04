@@ -644,3 +644,72 @@ nav {
     color: red;
     ;
 }
+
+/* Authentication pages and forms */
+
+.auth-wrapper {
+    min-height: 80vh;
+    justify-content: center;
+    margin: auto;
+    margin-top: 2rem;
+    width: 70vw;
+
+}
+
+.auth-container {
+    width: 50%;
+    align-items: center;
+    margin: auto;
+}
+
+.auth-message {
+    width: 70%;
+    align-items: center;
+    margin: auto;
+    margin-bottom: 3rem;
+    text-align: center;
+
+}
+
+.auth-message h3, h5 {
+    margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.auth-message h3 {
+    text-shadow: 0.25px 0.65px #B5C2B7;
+    font-size: 1.5rem;
+}
+
+.login-form {
+    width: 70%;
+    align-items: center;
+    margin: auto;
+    text-align: center;
+
+}
+
+.login-form input {
+    width: 100%;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    height: 1.55rem;
+
+    text-align: center;
+    
+}
+
+
+
+.login-form-button {
+    margin-top: 1rem;
+    border-radius: 15px;
+    border: 0.00rem solid black;
+    width: 50%;
+    height: 1.95rem;
+    background: #CE5374;
+}
+
+.login-form-button:hover {
+    background: #b41f40
+}
