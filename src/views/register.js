@@ -1,9 +1,9 @@
 
 import { register } from '../data/user.js';
 import { html } from '../lib/lit-html.js';
-import { createSubmiteHandler } from '../util.js';
+import { authPlaceholderValues, createSubmiteHandler } from '../util.js';
 
-const registerTemplate = (onRegister) => html `
+const registerTemplate = (onRegister, placeholderValueObject) => html `
 
 <div class="auth-wrapper">
     <div class="auth-container">
@@ -13,10 +13,10 @@ const registerTemplate = (onRegister) => html `
         </div>
         
         <form @submit=${onRegister} class="login-form">
-            <input placeholder="username" name="username"></input>
-            <input placeholder="email" name="email"></input>
-            <input placeholder="password" name="password" type="password"></input>
-            <input placeholder="password" name="repass" type="password"></input>
+            <input placeholder="${placeholderValueObject.username}" name="username"></input>
+            <input placeholder="${placeholderValueObject.email}" name="email"></input>
+            <input placeholder="${placeholderValueObject.password}" name="password" type="password"></input>
+            <input placeholder="${placeholderValueObject.repass}" name="repass" type="password"></input>
             <button class="login-form-button">SignUp</button>
         </form>
     </div>
@@ -26,7 +26,9 @@ const registerTemplate = (onRegister) => html `
 
 export async function registerView (ctx) {
 
-    ctx.render(registerTemplate(createSubmiteHandler(onRegister)));
+    const placeholderValueObject = authPlaceholderValues;
+
+    ctx.render(registerTemplate(createSubmiteHandler(onRegister), placeholderValueObject));
 
     let inputs = document.getElementsByTagName('input');
 
@@ -40,7 +42,7 @@ export async function registerView (ctx) {
     }
 
     function onInputUnfocus (event) {
-        event.target.placeholder = event.target.name;
+        event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
     async function onRegister ({ username, email, password, repass }) {

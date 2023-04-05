@@ -72,6 +72,14 @@ export const movieOptions = {
     'NC-17': 'No One 17 and Under [NC-17]',
 }
 
+// 20230405 -> object used for placeholder generation based on the input field's name
+export const authPlaceholderValues = {
+    'email': 'example@email.com',
+    'username': 'John Smith',
+    'password': 'p455w0rd',
+    'repass': 'p455w0rd',
+}
+
 export function filterRelation (field, collection, objectId) {
 
     const relation = {

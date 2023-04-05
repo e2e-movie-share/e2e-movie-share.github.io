@@ -1,10 +1,10 @@
 
 import { login } from '../data/user.js';
 import { html } from '../lib/lit-html.js';
-import { createSubmiteHandler } from '../util.js';
+import { authPlaceholderValues, createSubmiteHandler } from '../util.js';
 
 
-const loginTemplate = (onLogin) => html `
+const loginTemplate = (onLogin, placeholderValueObject) => html `
 
     <div class="auth-wrapper">
         <div class="auth-container">
@@ -13,8 +13,8 @@ const loginTemplate = (onLogin) => html `
                 <h5>Don't have an account? <a href="/register">Sign Up</a></h5>
             </div>
             <form @submit=${onLogin} class="login-form">
-            <input placeholder="email" name="email"></input>
-            <input placeholder="password" name="password" type="password"></input>
+            <input placeholder="${placeholderValueObject.email}" name="email"></input>
+            <input placeholder="${placeholderValueObject.password}" name="password" type="password"></input>
             <br>
             <button class="login-form-button">SignIn</button>
             </form>
@@ -24,7 +24,9 @@ const loginTemplate = (onLogin) => html `
 
 export async function loginView(ctx) {
 
-    ctx.render(loginTemplate(createSubmiteHandler(onLogin)));
+    const placeholderValueObject = authPlaceholderValues;
+
+    ctx.render(loginTemplate(createSubmiteHandler(onLogin), placeholderValueObject));
 
     let inputs = document.getElementsByTagName('input');
 
@@ -38,7 +40,7 @@ export async function loginView(ctx) {
     }
 
     function onInputUnfocus (event) {
-        event.target.placeholder = event.target.name;
+        event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
 
