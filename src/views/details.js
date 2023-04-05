@@ -84,7 +84,7 @@ export async function showDetails(ctx) {
     const ratingObject = createRatingObject(allRatings, ctx.user?.objectId);
     console.log(ratingObject);
 
-    ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate), createSubmiteHandler(onRate),
+    ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate, true), createSubmiteHandler(onRate),
     movie, currentComments, ratingObject));
 
     async function onCommentCreate({ commentText }) {

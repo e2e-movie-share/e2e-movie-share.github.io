@@ -15,7 +15,7 @@ export function removeUserData () {
 }
 
 
-export function createSubmiteHandler(callback) {
+export function createSubmiteHandler(callback, shouldClear) {
 
     return function (event) {
 
@@ -24,12 +24,16 @@ export function createSubmiteHandler(callback) {
         const data = Object.fromEntries([...eventData].map(([k, v])=>[k, v.trim()]));
         const children = event.target.children;
 
-        for (let child of children) {
-            console.log(child.tagName)
-            if (child.tagName=="INPUT") {
-                child.value = '';
+        if (shouldClear) {
+            for (let child of children) {
+                console.log(child.tagName)
+                if (child.tagName=="INPUT") {
+                    child.value = '';
+                }
             }
         }
+
+        
 
         callback(data, event.target);
 
