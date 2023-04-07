@@ -11,11 +11,19 @@ export function addUserNav(navTemplate) {
             ctx.renderNav(navTemplate(hasUser));
             const menu = document.querySelector('#mobile-menu');
             const menuLinks = document.querySelector('.navbar-menu-2');
-
-            menu.addEventListener('click', function () {
+            console.log(menu.getAttribute('listener'));
+            if (menu.getAttribute('listener') == null) {
+                menu.addEventListener('click', onNavBarClick);
+                menu.setAttribute('listener', 'true');
+                console.log('setting');
+            }
+            
+            function onNavBarClick () {
+                console.log('toggling');
                 menu.classList.toggle('is-active');
                 menuLinks.classList.toggle('active');
-            })
+            }
+
         }
         next();
 
