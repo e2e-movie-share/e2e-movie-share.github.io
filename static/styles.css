@@ -666,7 +666,6 @@ nav {
     width: 70%;
     align-items: center;
     margin: auto;
-    margin-bottom: 3rem;
     text-align: center;
 
 }
@@ -685,6 +684,7 @@ nav {
     width: 70%;
     align-items: center;
     margin: auto;
+    margin-top: 3rem;
     text-align: center;
 
 }
@@ -699,8 +699,6 @@ nav {
     
 }
 
-
-
 .login-form-button {
     margin-top: 1rem;
     border-radius: 15px;
@@ -712,4 +710,14 @@ nav {
 
 .login-form-button:hover {
     background: #b41f40
+}
+
+.login-error-message {
+    display: none;
+    font-size: 1.25rem;
+}
+
+.register-error-message {
+    display: none;
+    font-size: 1.25rem;
 }

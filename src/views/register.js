@@ -3,13 +3,14 @@ import { register } from '../data/user.js';
 import { html } from '../lib/lit-html.js';
 import { authPlaceholderValues, createSubmiteHandler } from '../util.js';
 
-const registerTemplate = (onRegister, placeholderValueObject) => html `
+const registerTemplate = (onRegister, placeholderValueObject) => html`
 
 <div class="auth-wrapper">
     <div class="auth-container">
         <div class="auth-message">
             <h3>Sign Up here</h3>
             <h5>Already have an account? <a href="/login">Sing In</a></h5>
+            <p class="register-error-message"></p>
         </div>
         
         <form @submit=${onRegister} class="login-form">
@@ -24,7 +25,7 @@ const registerTemplate = (onRegister, placeholderValueObject) => html `
 
 `;
 
-export async function registerView (ctx) {
+export async function registerView(ctx) {
 
     const placeholderValueObject = authPlaceholderValues;
 
@@ -37,26 +38,60 @@ export async function registerView (ctx) {
         input.addEventListener('focusout', onInputUnfocus);
     }
 
-    function onInputFocus (event) {
+    function onInputFocus(event) {
         event.target.placeholder = '';
     }
 
-    function onInputUnfocus (event) {
+    function onInputUnfocus(event) {
         event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
-    async function onRegister ({ username, email, password, repass }) {
+    async function onRegister({ username, email, password, repass }) {
 
-        if (email == '' || username == '' || password == '' ) {
-            return alert('All fields must be filled in!');
+        const errorMessage = document.querySelector(".register-error-message");
+
+        for (let input of document.querySelectorAll('input')) {
+            if (input.value != '' && input.style.borderColor == 'red') {
+                console.log(`Changing color - ${input.name}`)
+                input.style.borderColor = 'black';
+            }
+        }
+
+        if (email == '' || username == '' || password == '' || repass == '') {
+            for (let input of document.querySelectorAll('input')) {
+                if (input.value == '') {
+                    input.style.borderColor = "red";
+                } else {
+                    input.style.borderColor = "black"
+                }
+            }
+            errorMessage.textContent = `Please fill in all the fields!`;
+            errorMessage.style.display = "block";
+            return;
         }
 
         if (password !== repass) {
-            return alert('Password do not match!');
+            errorMessage.textContent = `Passwords do not match!`;
+            errorMessage.style.display = "block";
+            document.querySelector('[name="password"]').style.borderColor = "red";
+            document.querySelector('[name="repass"]').style.borderColor = "red";
+            return;
         }
+        try {
+            await register(email, username, password);
+            ctx.page.redirect('/');
+        } catch (err) {
+            const errorObject = JSON.parse(err.message);
 
-        await register(email, username, password);
-        ctx.page.redirect('/');
+            if (errorObject.code == 203) {
+                errorMessage.textContent = `${errorObject.error}!`;
+                errorMessage.style.display = "block";
+                document.querySelector('[name="email"]').style.borderColor = "red";
+            }
+
+            console.log(errorObject.code);
+        }
+        
 
     }
 

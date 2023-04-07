@@ -4,13 +4,14 @@ import { html } from '../lib/lit-html.js';
 import { authPlaceholderValues, createSubmiteHandler } from '../util.js';
 
 
-const loginTemplate = (onLogin, placeholderValueObject) => html `
+const loginTemplate = (onLogin, placeholderValueObject) => html`
 
     <div class="auth-wrapper">
         <div class="auth-container">
             <div class="auth-message">
                 <h3>Sign In to MovieShare</h3>
                 <h5>Don't have an account? <a href="/register">Sign Up</a></h5>
+                <p class="login-error-message">Error placeholder</p>
             </div>
             <form @submit=${onLogin} class="login-form">
             <input placeholder="${placeholderValueObject.email}" name="email"></input>
@@ -35,23 +36,55 @@ export async function loginView(ctx) {
         input.addEventListener('focusout', onInputUnfocus);
     }
 
-    function onInputFocus (event) {
+    function onInputFocus(event) {
         event.target.placeholder = '';
     }
 
-    function onInputUnfocus (event) {
+    function onInputUnfocus(event) {
         event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
 
-    async function onLogin ({ email, password }) {
+    async function onLogin({ email, password }) {
 
-        if (email == '' || password == '' ) {
-            return alert('All fields must be filled in!');
+        const errorMessage = document.querySelector(".login-error-message");
+
+        if (email == '' || password == '') {
+            for (let input of document.querySelectorAll('input')) {
+                if (input.value == '') {
+                    input.style.borderColor = "red";
+                } else {
+                    input.style.borderColor = "black"
+                }
+            }
+            errorMessage.textContent = `Please fill in all the fields!`;
+            errorMessage.style.display = "block";
+            return;
+        }
+        try {
+            await login(email, password);
+            ctx.page.redirect('/');
+        } catch (err) {
+
+            const errorObject = JSON.parse(err.message);
+
+            console.log(errorObject.code);
+            if (errorObject.code == 101) {
+                
+                errorMessage.textContent = `${errorObject.error}!`;
+                errorMessage.style.display = "block";
+                let inputs = document.querySelectorAll('input');
+                for (let input of inputs) {
+                    input.style.borderColor = "red";
+                }
+            }
+
+            console.log(`The error is ${errorObject}`);
+            // old error handling
+            // alert (err.message);    
         }
 
-        await login(email, password);
-        ctx.page.redirect('/');
+
 
     }
 

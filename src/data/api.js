@@ -39,14 +39,26 @@ async function request (method, url='/', data) {
 
         // ???? 
         if (response.ok !== true) {
-            throw new Error(result.message || result.error);
+
+            throw new Error(JSON.stringify({
+                "error": result.error, 
+                "code": result.code
+            }));
+            // throw new Error(result.message || result.error);
         }
 
         return result;
 
 
     } catch (err) {
-        alert (err.message);
+        // old handling
+        // alert (err.message);
+
+        // err.code returns undefined, since everything in throw new Error is in the property message
+        // console.log(err.code);
+
+        // this is where the properties are saved 
+        // console.log(err.message);
         throw err;
     }
 
