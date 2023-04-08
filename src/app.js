@@ -41,6 +41,3 @@ page('/create', authRequiredGuard(), createMovieView);
 
 // starting the app
 page.start();
-
-window.create = create;
-window.getAllMovies = getAllMovies;

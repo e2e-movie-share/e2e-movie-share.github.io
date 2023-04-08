@@ -58,7 +58,6 @@ export async function registerView(ctx) {
                 
             }
         }
-        console.log(lastEmail);
         event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
@@ -108,7 +107,6 @@ export async function registerView(ctx) {
                 document.querySelector('[name="email"]').style.borderColor = "crimson";
             }
 
-            console.log(errorObject.code);
         }
         
 

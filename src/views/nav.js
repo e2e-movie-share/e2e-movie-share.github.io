@@ -68,4 +68,4 @@ export const secondNavTemplate = (hasUser) => html `
             </ul>
         </div>
 
-`
+`;

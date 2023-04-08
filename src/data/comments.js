@@ -26,8 +26,6 @@ export async function postComment (commentData, userId, movieId) {
     commentData = addOwnerPointerToObject(commentData, userId);
     commentData = addMoviePointerToObject(commentData, movieId);
 
-    console.log(commentData);
-
     await post(endpoints.comments, commentData);
 }
 

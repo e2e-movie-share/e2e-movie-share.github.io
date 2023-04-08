@@ -77,7 +77,6 @@ export async function loginView(ctx) {
 
             const errorObject = JSON.parse(err.message);
 
-            console.log(errorObject.code);
             if (errorObject.code == 101) {
                 
                 errorMessage.textContent = `${errorObject.error}!`;
@@ -88,7 +87,6 @@ export async function loginView(ctx) {
                 }
             }
 
-            console.log(`The error is ${errorObject}`);
             // old error handling
             // alert (err.message);    
         }

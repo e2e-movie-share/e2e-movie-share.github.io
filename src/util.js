@@ -33,8 +33,6 @@ export function createSubmiteHandler(callback, shouldClear) {
             }
         }
 
-        
-
         callback(data, event.target);
 
     }

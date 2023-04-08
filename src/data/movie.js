@@ -72,7 +72,6 @@ export async function getMovieBySearchWordAndFilter (searchWord, filterList) {
             result.push(currentMovie);
         }
     }
-    console.log(result);
     return result;
 
 }
@@ -105,7 +104,6 @@ export async function getMoviesByCategoryAndFilter (categoryList, filterList) {
         }
     }
 
-    console.log(result);
     return result;
 
 }
@@ -121,7 +119,6 @@ export async function getMovieBySearchWordAndCategory (searchWord, categoryList)
             result.push(currentMovie);
         }
     }
-    console.log(result);
     return result;
 
 }
@@ -140,7 +137,6 @@ export async function getMovieByAllParameters (searchWord, categoryList, filterL
         }
     }
 
-    console.log(result);
     return result;
 
 }

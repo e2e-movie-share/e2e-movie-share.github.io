@@ -32,7 +32,6 @@ export async function createMovieView (ctx) {
 
     const options = Object.entries(movieOptions);
     const categories = Object.entries(movieCategories);
-    console.log(options)
 
     ctx.render(createMovieTemplate(createSubmiteHandler(onMovieCreate), options, categories));
 

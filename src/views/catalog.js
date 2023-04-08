@@ -79,15 +79,8 @@ const optionsCard = (option) => html `
 export async function catalogView(ctx) {
 
     // a midleware was needed first ...
-    console.log(`the query is : ${ctx.query.search}`);
-    console.log(`the filter query is : ${ctx.query.filter}`);
     let movies;
     let isSearch = Boolean(ctx.query.search);
-    console.log(ctx.query);
-    console.log(!!ctx.query)
-    console.log(!!ctx.query.search)
-    console.log(Object.keys(ctx.query))
-    console.log(ctx.query.category)
 
     // TODO make this whole mess into an abstract method;
     // also fetch queryString and the filters one time only
@@ -96,12 +89,10 @@ export async function catalogView(ctx) {
         if (!!ctx.query.search && !ctx.query.filter && !ctx.query.category) {
             const queryString = ctx.query.search;
             const {results: moviesBySearchWord} = await getMovieBySearchWord(queryString);
-            console.log(moviesBySearchWord);
             movies = moviesBySearchWord;
         } else if (!!ctx.query.search && !!ctx.query.filter && !ctx.query.category) {
             const queryString = ctx.query.search;
             const queryFilterList = ctx.query.filter.split(",");
-            console.log(queryFilterList);
 
             const moviesBySearchWordAndFIlter = await getMovieBySearchWordAndFilter(queryString, queryFilterList);
             movies = moviesBySearchWordAndFIlter;
@@ -122,7 +113,6 @@ export async function catalogView(ctx) {
                 queryCategoryList,
                 queryFilterList
             );
-            console.log(MoviesByCategoryAndFilter);
             movies = MoviesByCategoryAndFilter;
         } else if (!!ctx.query.search && !ctx.query.filter && !!ctx.query.category) {
             const queryCategoryList = ctx.query.category.split(",");
@@ -157,7 +147,6 @@ export async function catalogView(ctx) {
     const options = Object.entries(movieOptions);
     const categories = Object.entries(movieCategories);
 
-    console.log(movies);
     ctx.render(catalogTemplate(movies, onSearch, isSearch, options, categories));
 
     async function onSearch (event) {
@@ -165,7 +154,6 @@ export async function catalogView(ctx) {
         const searchedWord = event.target.parentElement.querySelector('input');
 
         const filters = document.getElementById("rating-filter");
-        console.log(filters);
         const selectedOptions = [];
 
         for (let i = 0; i < filters.children.length; i++) {
@@ -173,7 +161,6 @@ export async function catalogView(ctx) {
                 selectedOptions.push(filters.children[i]);
             };
         }
-        console.log(selectedOptions);
 
         const categoryFilters = document.getElementById("category-filter");
         const selectedCategories = [];
@@ -184,13 +171,15 @@ export async function catalogView(ctx) {
             }
         }
 
-        console.log(selectedCategories);
-
         if (selectedOptions.length > 0 && selectedCategories.length == 0) {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}&filter=${encodeURIComponent(selectedOptions.map(e => e.value).join(","))}`);
             console.log(decodeURIComponent(selectedOptions.map(e => e.value).join(",")));
         } else if (selectedCategories.length > 0 && selectedOptions.length == 0) {
-            ctx.page.redirect(`/catalog?search=${searchedWord.value}&category=${encodeURIComponent(selectedCategories.map(e => e.value).join(","))}`);
+            ctx.page.redirect(`/catalog?search=${
+                searchedWord.value
+            }&category=${
+                encodeURIComponent(selectedCategories.map(e => e.value).join(","))
+            }`);
         } else if (selectedCategories.length > 0 && selectedOptions.length > 0) {
             ctx.page.redirect(`/catalog?search=${
                 searchedWord.value
@@ -202,8 +191,6 @@ export async function catalogView(ctx) {
         }else {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}`);
         }
-
-        
 
     }
 

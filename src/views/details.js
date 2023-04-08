@@ -67,7 +67,6 @@ const commentCard = (comment) => html`
 
 export async function showDetails(ctx) {
 
-    console.log(ctx.params);
     const id = ctx.params.id;
     const movie = await getMovieById(id);
 
@@ -76,14 +75,11 @@ export async function showDetails(ctx) {
 
     currentComments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movie.owner.objectId));
 
-    console.log(currentComments);
 
     let allRatings = await getMovieRatingsById(id);
     allRatings = allRatings.results;
-    console.log(allRatings);
 
     const ratingObject = createRatingObject(allRatings, ctx.user?.objectId);
-    console.log(ratingObject);
 
     ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate, true), createSubmiteHandler(onRate),
     movie, currentComments, ratingObject));
@@ -98,15 +94,11 @@ export async function showDetails(ctx) {
             return alert("You have to be logged in to post a comment!")
         }
 
-        console.log(ctx.user);
         const currentUserId = ctx.user?.objectId;
-        console.log(commentText);
 
         const commentData = {
             commentText,
         }
-
-        console.log(commentData);
 
         await postComment(commentData, currentUserId, id);
 
@@ -124,7 +116,6 @@ export async function showDetails(ctx) {
                 break;
             }
         }
-        console.log(button.textContent);
 
         if (button.textContent == 'Rate') {
             const ratingData = {
@@ -138,7 +129,6 @@ export async function showDetails(ctx) {
             await postRating(ratingData, id, ctx.user.objectId);
         } else {
             const currentRatingId = document.getElementsByClassName('rating holder')[0].id;
-            console.log(currentRatingId);
             await deleteRating(currentRatingId);
         }
 

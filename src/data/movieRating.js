@@ -21,7 +21,6 @@ export async function postRating (ratingData, movieId, ownerId) {
     ratingData = addMoviePointerToObject(ratingData, movieId);
     ratingData = addOwnerPointerToObject(ratingData, ownerId);
 
-    console.log(ratingData);
     await post(endpoints.rateMovie, ratingData);
 
 }
