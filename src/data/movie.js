@@ -27,7 +27,10 @@ const endpoints = {
     })}`,
     'moviesByFilter' : (listOfFilters) => `/classes/Movie?where=${encodeObject({
         "rating": {"$in": listOfFilters},
-    })}` 
+    })}`,
+    'moviesByCategory' : (listOfCategories) =>  `/classes/Movie?where=${encodeObject({
+        "category": {"$in": listOfCategories},
+    })}`,
 }
 
 
@@ -57,6 +60,7 @@ export async function getMovieBySearchWord (searchWord) {
 
 }
 
+// TODO Make more abstract, usable for search word and any type of filter;
 export async function getMovieBySearchWordAndFilter (searchWord, filterList) {
     
     const data = await get(endpoints.moviesBySearchWordRegex(searchWord));
@@ -78,5 +82,65 @@ export async function getMoviesByFilter (filterList) {
 
     const data = await get(endpoints.moviesByFilter(filterList));
     return data;
+
+}
+
+export async function getMoviesByCategory (categoryList) {
+
+    const data = await get(endpoints.moviesByCategory(categoryList));
+    return data;
+
+}
+
+export async function getMoviesByCategoryAndFilter (categoryList, filterList) {
+
+    const data = await get(endpoints.moviesByCategory(categoryList));
+    const result = [];
+
+    // TODO make filtering more abstract; since it is used in a few places;
+    for (let i = 0; i < data.results.length; i++) {
+        const currentMovie = data.results[i];
+        if (filterList.indexOf(currentMovie.rating) >= 0) {
+            result.push(currentMovie);
+        }
+    }
+
+    console.log(result);
+    return result;
+
+}
+
+export async function getMovieBySearchWordAndCategory (searchWord, categoryList) {
+    
+    const data = await get(endpoints.moviesBySearchWordRegex(searchWord));
+    const result = [];
+
+    for (let i = 0; i < data.results.length; i++) {
+        const currentMovie = data.results[i];
+        if (categoryList.indexOf(currentMovie.category) >= 0) {
+            result.push(currentMovie);
+        }
+    }
+    console.log(result);
+    return result;
+
+}
+
+export async function getMovieByAllParameters (searchWord, categoryList, filterList) {
+
+    // using this, since the searchword is the most likely to shorten the query time and narrow the results
+    const data = await getMovieBySearchWordAndFilter(searchWord, filterList);
+
+    const result = [];
+
+    for (let i = 0; i < data.length; i++) {
+        const currentMovie = data[i];
+        if (categoryList.indexOf(currentMovie.category) >= 0) {
+            result.push(currentMovie);
+        }
+    }
+
+    console.log(result);
+    return result;
 
 }

@@ -76,6 +76,17 @@ export const movieOptions = {
     'NC-17': 'No One 17 and Under [NC-17]',
 }
 
+export const movieCategories = {
+    'action': 'Action',
+    'fantasy': 'Fantasy',
+    'adventure': 'Adventure',
+    'romantic': 'Romantic',
+    'comedy': 'Comedy',
+    'horror': 'Horror',
+    'scifi': 'Science Fiction',
+    'other': 'Other', 
+}
+
 // 20230405 -> object used for placeholder generation based on the input field's name
 export const authPlaceholderValues = {
     'email': 'example@email.com',

@@ -10,6 +10,7 @@ import { deleteRating, getMovieRatingsById, postRating } from "../data/movieRati
 const detailTemplate = (onComment, onRate, movie, currentComments, ratingObject) => html`
     <h1>${movie.name}</h1>
     <h3>${movie.year}</h3>
+    <h3>${movie.category}</h3>
     <h3>${movie.rating}</h3>
     <p>${movie.description}</p>
     <p class="rating holder" id="${ratingObject.ratingId}">

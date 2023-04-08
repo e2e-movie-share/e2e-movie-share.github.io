@@ -1,10 +1,10 @@
 
 import { html, nothing } from "../lib/lit-html.js";
 import { repeat } from '../lib/directives/repeat.js'
-import { getAllMovies, getMovieBySearchWord, getMovieBySearchWordAndFilter, getMoviesByFilter } from "../data/movie.js";
-import { movieOptions } from "../util.js";
+import { getAllMovies, getMovieByAllParameters, getMovieBySearchWord, getMovieBySearchWordAndCategory, getMovieBySearchWordAndFilter, getMoviesByCategory, getMoviesByCategoryAndFilter, getMoviesByFilter } from "../data/movie.js";
+import { movieCategories, movieOptions } from "../util.js";
 
-const catalogTemplate = (movies, onSearch, isSearch, options) => html `
+const catalogTemplate = (movies, onSearch, isSearch, options, categories) => html `
     <div class="search-bar-wrapper">
         <div class="search-div">
             <form class="search-form" @submit=${onSearch}>
@@ -19,14 +19,25 @@ const catalogTemplate = (movies, onSearch, isSearch, options) => html `
         </div>
     </div>
     <div class="rating-filter-wrapper">
-        <div class="rating-filter">
-            <form class="rating-filter-form">
-                <label for="rating-filter"> Choose Categories: </label>
-                <br>    
-                <select name="rating" id="rating-filter" multiple>
-                    ${repeat(options, optionsCard)}
-                </select>
-            </form>
+        <div class="inner-rating-wrapper">
+            <div class="rating-filter">
+                <form class="rating-filter-form">
+                    <label for="rating-filter">Rating:</label>
+                    <br>    
+                    <select name="rating" id="rating-filter" multiple>
+                        ${repeat(options, optionsCard)}
+                    </select>
+                </form>
+            </div>
+            <div class="category-filter">
+                <form class="category-filter-form">
+                    <label for="category-filter">Categories:</label>
+                    <br>    
+                    <select name="category" id="category-filter" multiple>
+                        ${repeat(categories, optionsCard)}
+                    </select>
+                </form>
+            </div>
         </div>    
     </div>
     <div class="movie-wrapper">
@@ -76,24 +87,64 @@ export async function catalogView(ctx) {
     console.log(!!ctx.query)
     console.log(!!ctx.query.search)
     console.log(Object.keys(ctx.query))
+    console.log(ctx.query.category)
+
+    // TODO make this whole mess into an abstract method;
+    // also fetch queryString and the filters one time only
     if (!!ctx.query && Object.keys(ctx.query).length > 0) {
 
-        if (!!ctx.query.search && !ctx.query.filter) {
+        if (!!ctx.query.search && !ctx.query.filter && !ctx.query.category) {
             const queryString = ctx.query.search;
             const {results: moviesBySearchWord} = await getMovieBySearchWord(queryString);
             console.log(moviesBySearchWord);
             movies = moviesBySearchWord;
-        } else if (!!ctx.query.search && !!ctx.query.filter) {
+        } else if (!!ctx.query.search && !!ctx.query.filter && !ctx.query.category) {
             const queryString = ctx.query.search;
             const queryFilterList = ctx.query.filter.split(",");
             console.log(queryFilterList);
 
             const moviesBySearchWordAndFIlter = await getMovieBySearchWordAndFilter(queryString, queryFilterList);
             movies = moviesBySearchWordAndFIlter;
-        } else if (!ctx.query.search && !!ctx.query.filter) {
+        } else if (!ctx.query.search && !!ctx.query.filter && !ctx.query.category) {
             const queryFilterList = ctx.query.filter.split(",");
             const {results: MoviesByFilter} = await getMoviesByFilter(queryFilterList);
             movies = MoviesByFilter;
+        } else if (!ctx.query.search && !ctx.query.filter && !!ctx.query.category) {
+            const queryCategoryList = ctx.query.category.split(",");
+            const {results:MoviesByCategory} = await getMoviesByCategory(queryCategoryList);
+            movies = MoviesByCategory;
+        } else if (!ctx.query.search && !!ctx.query.filter && !!ctx.query.category) {
+            const queryCategoryList = ctx.query.category.split(",");
+            const queryFilterList = ctx.query.filter.split(",");
+            // IMPORTANT -> should NOT be {results:varableName},
+            // since we return an array directly from data fetching; maybe make it thus for all?
+            const MoviesByCategoryAndFilter = await getMoviesByCategoryAndFilter(
+                queryCategoryList,
+                queryFilterList
+            );
+            console.log(MoviesByCategoryAndFilter);
+            movies = MoviesByCategoryAndFilter;
+        } else if (!!ctx.query.search && !ctx.query.filter && !!ctx.query.category) {
+            const queryCategoryList = ctx.query.category.split(",");
+            const queryString = ctx.query.search;
+            const MoviesByCategoryAndSearchWord = await getMovieBySearchWordAndCategory(
+                queryString,
+                queryCategoryList
+            );
+            movies = MoviesByCategoryAndSearchWord;
+        } else if (!!ctx.query.search && !!ctx.query.filter && !!ctx.query.category) {
+            const queryCategoryList = ctx.query.category.split(",");
+            const queryFilterList = ctx.query.filter.split(",");
+            const queryString = ctx.query.search;
+
+            const MoviesByAllThreeFilters = await getMovieByAllParameters(
+                queryString,
+                queryCategoryList,
+                queryFilterList,
+            )
+
+            movies = MoviesByAllThreeFilters;
+
         }
 
 
@@ -104,9 +155,10 @@ export async function catalogView(ctx) {
     }
 
     const options = Object.entries(movieOptions);
+    const categories = Object.entries(movieCategories);
 
     console.log(movies);
-    ctx.render(catalogTemplate(movies, onSearch, isSearch, options));
+    ctx.render(catalogTemplate(movies, onSearch, isSearch, options, categories));
 
     async function onSearch (event) {
         event.preventDefault();
@@ -123,10 +175,31 @@ export async function catalogView(ctx) {
         }
         console.log(selectedOptions);
 
-        if (selectedOptions.length > 0) {
+        const categoryFilters = document.getElementById("category-filter");
+        const selectedCategories = [];
+
+        for (let k = 0; k < categoryFilters.children.length; k++) {
+            if (categoryFilters.children[k].selected) {
+                selectedCategories.push(categoryFilters.children[k]);
+            }
+        }
+
+        console.log(selectedCategories);
+
+        if (selectedOptions.length > 0 && selectedCategories.length == 0) {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}&filter=${encodeURIComponent(selectedOptions.map(e => e.value).join(","))}`);
             console.log(decodeURIComponent(selectedOptions.map(e => e.value).join(",")));
-        } else {
+        } else if (selectedCategories.length > 0 && selectedOptions.length == 0) {
+            ctx.page.redirect(`/catalog?search=${searchedWord.value}&category=${encodeURIComponent(selectedCategories.map(e => e.value).join(","))}`);
+        } else if (selectedCategories.length > 0 && selectedOptions.length > 0) {
+            ctx.page.redirect(`/catalog?search=${
+                searchedWord.value
+            }&category=${
+                encodeURIComponent(selectedCategories.map(e => e.value).join(","))
+            }&filter=${
+                encodeURIComponent(selectedOptions.map(e => e.value).join(","))
+            }`);
+        }else {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}`);
         }
 

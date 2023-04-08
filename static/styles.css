@@ -427,7 +427,7 @@ nav {
 
 .search-form {
     align-items: center;
-    width: 65%;
+    /* width: 65%; */
     margin: auto;
 }
 
@@ -437,22 +437,47 @@ nav {
     border-radius: 2rem;
 }
 
+.search-button {
+    width: 24%;
+    border-radius: 17px;
+}
+
 .rating-filter-wrapper {
     align-items: center;
     margin: auto;
     margin-top: 0.65rem;
 }
 
-.rating-filter {
-    align-items: center;
+.inner-rating-wrapper {
+    display: flex;
     width: 50%;
     margin: auto;
+    justify-content: space-between;
+}
+
+.rating-filter {
+    align-items: center;
+    width: 55%;
+    /* margin: auto; */
 }
 
 .rating-filter-form {
     align-items: center;
-    width: 65%;
-    margin: auto;
+    /* width: 65%; */
+    /* margin: auto; */
+}
+
+.rating-filter-form select {
+    width: 100%;
+}
+
+.category-filter {
+    align-items: center;
+    width: 35%;
+}
+
+.category-filter-form select{
+    width: 100%;
 }
 
 

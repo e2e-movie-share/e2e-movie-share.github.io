@@ -1,10 +1,10 @@
 import { create } from "../data/movie.js";
 import { repeat } from "../lib/directives/repeat.js";
 import { html } from "../lib/lit-html.js";
-import { createSubmiteHandler, getUserData, movieOptions } from "../util.js";
+import { createSubmiteHandler, getUserData, movieCategories, movieOptions } from "../util.js";
 
 
-const createMovieTemplate = (onMovieCreate, options) => html`
+const createMovieTemplate = (onMovieCreate, options, categories) => html`
     <div class="form-wrapper">
         <h3>Add a new movie to discuss to the website!</h3>
         <form @submit=${onMovieCreate} class="create-movie-form"> 
@@ -12,6 +12,10 @@ const createMovieTemplate = (onMovieCreate, options) => html`
             <input name="year" placeholder="Release date" type="number"></input>    
             <select name="rating">
                 ${repeat(options, optionsCard)}
+            </select>
+            <br>
+            <select name="category">
+                ${repeat(categories, optionsCard)}
             </select>    
             <textarea name="description" placeholder="Description" rows=10 cols=10></textarea>  
             <input name="imageUrl" placeholder="Image URL"></input>
@@ -27,13 +31,14 @@ const optionsCard = (option) => html `
 export async function createMovieView (ctx) {
 
     const options = Object.entries(movieOptions);
+    const categories = Object.entries(movieCategories);
     console.log(options)
 
-    ctx.render(createMovieTemplate(createSubmiteHandler(onMovieCreate), options));
+    ctx.render(createMovieTemplate(createSubmiteHandler(onMovieCreate), options, categories));
 
-    async function onMovieCreate ({ name, year, rating, description, imageUrl }) {
+    async function onMovieCreate ({ name, year, rating, category, description, imageUrl }) {
 
-        if (name == '' || year == '' || rating == '' || description == '') {
+        if (name == '' || year == '' || rating == '' || description == '' || category == '') {
             return alert ('Please fill in all the the fields!');
         }
 
@@ -42,11 +47,12 @@ export async function createMovieView (ctx) {
         }
 
         year = Number(year);
-
+        console.log(category);
         const movieData = {
             name,
             year, 
-            rating, 
+            rating,
+            category, 
             description, 
             imageUrl
         }
