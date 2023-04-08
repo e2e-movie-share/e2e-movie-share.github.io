@@ -41,6 +41,15 @@ export async function loginView(ctx) {
     }
 
     function onInputUnfocus(event) {
+
+        // when a field is red due to being submitted unfilled, and the user fills it,
+        // indicate that by removing the red color; the same as in register
+        if (event.target.style.borderColor == 'red') {
+            if (event.target.value != '') {
+                event.target.style.borderColor = 'black';
+            }
+        }
+
         event.target.placeholder = placeholderValueObject[event.target.name];
     }
 

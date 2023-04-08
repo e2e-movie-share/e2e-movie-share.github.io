@@ -27,6 +27,8 @@ const registerTemplate = (onRegister, placeholderValueObject) => html`
 
 export async function registerView(ctx) {
 
+    let lastEmail = null;
+
     const placeholderValueObject = authPlaceholderValues;
 
     ctx.render(registerTemplate(createSubmiteHandler(onRegister), placeholderValueObject));
@@ -43,6 +45,20 @@ export async function registerView(ctx) {
     }
 
     function onInputUnfocus(event) {
+
+        // when a field is red due to being submitted unfilled, and the user fills it,
+        // indicate that by removing the red color
+        if (event.target.style.borderColor == 'red') {
+            if (event.target.value != '') {
+                event.target.style.borderColor = 'black';
+            } // return borderColor to black if the user changes the email;
+        } else if (event.target.style.borderColor == 'crimson' && event.target.name == "email") {
+            if (event.target.value != lastEmail) {
+                event.target.style.borderColor = 'black';
+                
+            }
+        }
+        console.log(lastEmail);
         event.target.placeholder = placeholderValueObject[event.target.name];
     }
 
@@ -77,6 +93,9 @@ export async function registerView(ctx) {
             document.querySelector('[name="repass"]').style.borderColor = "red";
             return;
         }
+
+        lastEmail = email;
+
         try {
             await register(email, username, password);
             ctx.page.redirect('/');
@@ -86,7 +105,7 @@ export async function registerView(ctx) {
             if (errorObject.code == 203) {
                 errorMessage.textContent = `${errorObject.error}!`;
                 errorMessage.style.display = "block";
-                document.querySelector('[name="email"]').style.borderColor = "red";
+                document.querySelector('[name="email"]').style.borderColor = "crimson";
             }
 
             console.log(errorObject.code);
