@@ -52,9 +52,16 @@ const catalogTemplate = (movies, onSearch, isSearch, options, categories) => htm
         </div>
 
         <!-- Throws error with a single item - it doesn't, the problem was with fetching (result'S')-->
+        ${movies.length > 0 ? html `
         <div class="movie-list">
             ${repeat(movies, m => m.objectId, movieCard)}
         </div>
+        ` : html `
+        <div class="no-movies">
+            No movies found with such criteria!
+        </div>
+        `}
+
     </div>
 `;
 
