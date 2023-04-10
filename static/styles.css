@@ -669,7 +669,93 @@ nav {
 }
 
 
-/* Detail comments */
+/* Details mvoie */
+
+.details-wrapper {
+    margin-left: 1rem;
+    margin-top: 1rem;
+    
+}
+
+.details-content {
+    display: flex;
+    flex-direction: row;
+    width: 75%;
+    justify-content: space-between;
+    margin-right: 0;
+    gap: 2rem;
+    margin: auto;
+    
+}
+
+.details-text {
+    width: 65%;
+}
+
+.details-text h1 {
+    margin-top: 0;
+}
+
+.details-image {
+    width: 25rem;
+    height: 25rem;
+    display: block;
+    object-fit: fill;
+}
+
+.comments {
+    width: 75%;
+    margin: auto;
+    margin-top: 2rem;
+}
+
+.comment-submit-form {
+    width: 65%;
+}
+
+.comment-submit-form input {
+    width: 65%;
+    border: none;
+    border-bottom: #131313;
+}
+
+.comment-submit-form input:focus {
+    outline: none;
+}
+
+.comment-line-div {
+    height: 1rem;
+    margin-top: 0.45rem;
+    width: 65%;
+    border-top: 1px solid grey;
+}
+
+.comment-submit-button {
+    width: 15%;
+    margin-left: 0.55rem;
+    border-radius: 15px;
+    border: none;
+    display: none;
+}
+
+.cancel {
+    background-color: white;
+}
+
+.cancel:hover {
+    background-color: #a5a5a5;
+    cursor: pointer;
+}
+
+.blue-btn {
+    background-color: rgb(46, 185, 185);
+    cursor: pointer;
+}
+
+.blue-btn:hover {
+    background-color: rgb(26, 114, 114);
+}
+
 
 .owner-comment {
     color: red;
