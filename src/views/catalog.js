@@ -178,6 +178,11 @@ export async function catalogView(ctx) {
             }
         }
 
+        // remove search with empty query when pressing the button
+        if (searchedWord.value == '' && selectedOptions.length == 0 && selectedCategories.length == 0) {
+            return;
+        }
+
         if (selectedOptions.length > 0 && selectedCategories.length == 0) {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}&filter=${encodeURIComponent(selectedOptions.map(e => e.value).join(","))}`);
             console.log(decodeURIComponent(selectedOptions.map(e => e.value).join(",")));
