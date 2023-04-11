@@ -756,6 +756,30 @@ nav {
     background-color: rgb(26, 114, 114);
 }
 
+.rating-container {
+    /* display: grid;
+    height: 100%;
+    place-items: center;
+    text-align: center; */
+
+    width: 10rem;
+    background: #B5C2B7;
+    padding: 5px 7px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.stars input {
+    display: none;
+}
+
+.stars label {
+    height: 10px;
+}
+
 
 .owner-comment {
     color: red;

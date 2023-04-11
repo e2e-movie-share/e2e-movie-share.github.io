@@ -8,7 +8,7 @@ import { classMap } from '../lib/directives/class-map.js'
 import { deleteRating, getMovieRatingsById, postRating } from "../data/movieRating.js";
 
 const detailTemplate = (
-    onComment, onRate, movie, currentComments, ratingObject, movieOptions, movieCategories
+    onComment, onRate, movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser
     ) => html`
     <div class="details-wrapper">
 
@@ -28,13 +28,17 @@ const detailTemplate = (
                 ${ratingObject.hasRated ? html `
                 <p>Your Rating: ${ratingObject.currentUserRating}</p>
                 ` : html `
-                <select id="rating" name="rating">
-                    <option calue="1">1</option>
-                    <option calue="2">2</option>
-                    <option calue="3">3</option>
-                    <option calue="4">4</option>
-                    <option calue="5">5</option>
-                </select>
+                <input type="hidden" id="rate-input" name="rating" value="-1"></input>
+                <div class="rating-container">
+                    <div class="stars">
+                        <p class="fas fa-star" id="star-1"></p>
+                        <p class="fas fa-star" id="star-2"></p>
+                        <p class="fas fa-star" id="star-3"></p>
+                        <p class="fas fa-star" id="star-4"></p>
+                        <p class="fas fa-star" id="star-5"></p>
+                    </div>
+                </div>
+
                 `}
                 
                 ${ratingObject.hasRated ? html `
@@ -60,7 +64,12 @@ const detailTemplate = (
         <div class="comments">
             <form @submit="${onComment}" class="comment-submit-form">
                 <input name="commentText" placeholder="Enter your comment"></input>
-                <button type="submit" class="comment-submit-button">Comment</button>
+                ${hasUser ? html `
+                <button type="submit" class="comment-submit-button" disabled>Comment</button>
+                ` : html `
+                <button type="submit" class="comment-submit-button disabled" disabled>Comment</button>
+                `}
+                
                 <button type="button" class="comment-submit-button cancel">Cancel</button>
             </form>
 
@@ -93,6 +102,7 @@ export async function showDetails(ctx) {
 
     const result = await getSpecificComments(id);
     const currentComments = result.results;
+    const hasUser = ctx.user;
 
     currentComments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movie.owner.objectId));
 
@@ -103,7 +113,7 @@ export async function showDetails(ctx) {
     const ratingObject = createRatingObject(allRatings, ctx.user?.objectId);
 
     ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate, true), createSubmiteHandler(onRate),
-    movie, currentComments, ratingObject, movieOptions, movieCategories));
+    movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser));
 
     const commentInput = document.getElementsByTagName('input')[0];
     commentInput.addEventListener('focusin', revealButtons);
@@ -112,6 +122,54 @@ export async function showDetails(ctx) {
     const submitButton = buttons[0];
     const cancelButton = buttons[1];
     cancelButton.addEventListener('click', hideButtons);
+
+    const stars = document.getElementsByClassName('fa-star');
+    const inputRate = document.getElementById('rate-input');
+    let lastStarClicked = -1;
+
+    for (let star of stars) {
+        star.addEventListener('click', starClicked);
+    }
+
+    function starClicked (event) {
+        
+        const currentId = event.target.id.split("-")[1];
+        inputRate.value = currentId;
+
+        if (lastStarClicked == -1) {
+            for (let i = 0; i < currentId; i++) {
+                stars[i].classList.add('golden');
+                stars[i].style.color = "yellow";
+                
+            }
+            lastStarClicked = currentId;
+        } else {
+            if (currentId > lastStarClicked) {
+                for (let i = lastStarClicked; i < currentId; i++) {
+                    stars[i].classList.add('golden');
+                    stars[i].style.color = "yellow";
+                    
+                }
+                lastStarClicked = currentId;
+            } else if (currentId == lastStarClicked) {
+                for (let i = 0; i < currentId; i++) {
+                    stars[i].classList.remove('golden');
+                    stars[i].style.color = "black";
+                    inputRate.value = -1;
+                    
+                }
+                lastStarClicked = -1;
+            } else if (currentId < lastStarClicked) {
+                for (let i = currentId; i < lastStarClicked; i++) {
+                    stars[i].classList.remove('golden');
+                    stars[i].style.color = "black";
+                    
+                }
+                lastStarClicked = currentId;
+            }
+        }
+        
+    }
 
     function revealButtons (event) {
         for (let button of buttons) {
@@ -131,12 +189,16 @@ export async function showDetails(ctx) {
 
     function onCommentInput (event) {
         if (event.target.value == '') {
+            submitButton.disabled = true;
             if (submitButton.classList.contains('blue-btn')) {
                 submitButton.classList.remove('blue-btn');
             }
         } else {
             if (!submitButton.classList.contains('blue-btn')) {
                 submitButton.classList.add('blue-btn');
+            }
+            if (!submitButton.classList.contains('disabled')) {
+                submitButton.disabled = false;
             }
         }
     }
@@ -172,6 +234,10 @@ export async function showDetails(ctx) {
                 button = element;
                 break;
             }
+        }
+
+        if (rating == -1 || rating == "-1") {
+            return
         }
 
         if (button.textContent == 'Rate') {
