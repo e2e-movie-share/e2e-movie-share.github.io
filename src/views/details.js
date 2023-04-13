@@ -31,11 +31,11 @@ const detailTemplate = (
                 <input type="hidden" id="rate-input" name="rating" value="-1"></input>
                 <div class="rating-container">
                     <div class="stars">
-                        <p class="fas fa-star" id="star-1"></p>
-                        <p class="fas fa-star" id="star-2"></p>
-                        <p class="fas fa-star" id="star-3"></p>
-                        <p class="fas fa-star" id="star-4"></p>
-                        <p class="fas fa-star" id="star-5"></p>
+                        <span class="fas fa-star" id="star-1"></span>
+                        <span class="fas fa-star" id="star-2"></span>
+                        <span class="fas fa-star" id="star-3"></span>
+                        <span class="fas fa-star" id="star-4"></span>
+                        <span class="fas fa-star" id="star-5"></span>
                     </div>
                 </div>
 
@@ -129,6 +129,28 @@ export async function showDetails(ctx) {
 
     for (let star of stars) {
         star.addEventListener('click', starClicked);
+        star.addEventListener('mouseover', starHovered);
+        star.addEventListener('mouseout', starUnhovered);
+    }
+
+    function starHovered (event) {
+        const hoveredId = event.target.id.split("-")[1];
+        if (lastStarClicked < 0) {
+            for (let k = 0; k < hoveredId; k++) {
+                stars[k].style.color = "yellow";
+            }
+        }
+        
+    }
+
+    function starUnhovered (event) {
+        const unhoveredId = event.target.id.split("-")[1];
+        if (lastStarClicked < 0) {
+            for (let k = 0; k < unhoveredId; k++) {
+                stars[k].style.color = "black";
+            }
+        }
+        
     }
 
     function starClicked (event) {
