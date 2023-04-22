@@ -65,6 +65,13 @@ export function addMoviePointerToObject (object, movieId) {
 
 }
 
+export function addCommentPointerToObject (object, commentId) {
+
+    const data = Object.assign({}, object);
+    data.originalComment = createPointer('Comment', commentId);
+    return data;
+
+}
 
 export const movieOptions = {
     'G': 'General Audiences [G]',

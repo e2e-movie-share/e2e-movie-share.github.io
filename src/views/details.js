@@ -6,6 +6,7 @@ import { createRatingObject, createSubmiteHandler, movieCategories, movieOptions
 import { repeat } from '../lib/directives/repeat.js'
 import { classMap } from '../lib/directives/class-map.js'
 import { deleteRating, getMovieRatingsById, postRating } from "../data/movieRating.js";
+import { postReply } from "../data/replies.js";
 
 const detailTemplate = (
     onComment, onRate, movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser
@@ -89,8 +90,16 @@ const detailTemplate = (
 `;
 
 const commentCard = (comment) => html`
-<li class=${classMap({ 'owner-comment': comment.isOwnerOfMovie })}>
+<li class=${
+    classMap({ 'owner-comment': comment.isOwnerOfMovie })
+} id="${comment.objectId}">
     ${comment.owner.username}: ${comment.commentText}
+    Reply: 
+    <form @submit="${comment.onCommentReply}" class="reply-comment-form">
+        <input name="replyText" placeholder="Reply to this comment">
+        </input>
+        <button>Submit</button>                
+    </form>
 </li> 
 `;
 
@@ -105,6 +114,7 @@ export async function showDetails(ctx) {
     const hasUser = ctx.user;
 
     currentComments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movie.owner.objectId));
+    currentComments.map(c => c.onCommentReply = createSubmiteHandler(onReply));
 
 
     let allRatings = await getMovieRatingsById(id);
@@ -223,6 +233,32 @@ export async function showDetails(ctx) {
                 submitButton.disabled = false;
             }
         }
+    }
+
+    // started doing reply functionality, only posting is finished
+    async function onReply ({ replyText }, event) {
+
+        if (replyText == '') {
+            return alert('Cannot submit empty reply :(')
+        }
+
+        if (!ctx.user) {
+            return alert("You have to be logged in to reply to a comment!")
+        }
+
+        console.log(event.parentElement);
+        const currentUserId = ctx.user?.objectId;
+        const currentCommentId = event.parentElement.id;
+        console.log(currentCommentId);
+
+        const replyData = {
+            content: replyText,
+        }
+
+        await postReply(replyData, currentUserId, id, currentCommentId);
+
+        ctx.page.redirect(`/catalog/${id}`);
+
     }
 
     async function onCommentCreate({ commentText }) {
