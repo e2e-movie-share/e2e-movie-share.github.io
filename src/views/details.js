@@ -1,12 +1,12 @@
 
 import { getSpecificComments, postComment } from "../data/comments.js";
 import { getMovieById } from "../data/movie.js";
-import { html } from "../lib/lit-html.js";
+import { html, nothing } from "../lib/lit-html.js";
 import { createRatingObject, createSubmiteHandler, movieCategories, movieOptions } from "../util.js";
 import { repeat } from '../lib/directives/repeat.js'
 import { classMap } from '../lib/directives/class-map.js'
 import { deleteRating, getMovieRatingsById, postRating } from "../data/movieRating.js";
-import { postReply } from "../data/replies.js";
+import { getSpecificReplies, postReply } from "../data/replies.js";
 
 const detailTemplate = (
     onComment, onRate, movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser
@@ -79,7 +79,7 @@ const detailTemplate = (
 
             ${currentComments.length > 0 ?
                 html`
-                <ul>
+                <ul class="comments-list">
                     ${repeat(currentComments, c => c.objectId, commentCard)}
                 </ul>
                 `
@@ -91,17 +91,39 @@ const detailTemplate = (
 
 const commentCard = (comment) => html`
 <li class=${
-    classMap({ 'owner-comment': comment.isOwnerOfMovie })
+    classMap({
+    'owner-comment': comment.isOwnerOfMovie, 
+    'comment': !comment.isOwnerOfMovie,
+})
 } id="${comment.objectId}">
-    ${comment.owner.username}: ${comment.commentText}
-    Reply: 
-    <form @submit="${comment.onCommentReply}" class="reply-comment-form">
-        <input name="replyText" placeholder="Reply to this comment">
-        </input>
-        <button>Submit</button>                
-    </form>
+    <div class="commentor-name">${comment.owner.username}:</div>
+    <div class="comment-text">${comment.commentText}</div>
+    <button class="show-reply-form-button">Reply</button>
+    <div class="comment-reply-form"> 
+        <form @submit="${comment.onCommentReply}" class="reply-comment-form">
+            <input name="replyText" placeholder="Reply to this comment">
+            </input>
+            <button>Submit</button>                
+        </form>
+    </div>
+    ${comment.replies.length > 0 ? html `
+        <div class="show-replies-button">
+            <button>${comment.replies.length} ${
+                comment.replies.length == 1 ? 'reply' : 'replies'
+            }</button>
+        </div>
+    ` : nothing}
+    <div class="replies">
+        ${comment.replies.length > 0 ? html `
+            ${repeat(comment.replies, r => r.objectId, replyCard)}
+        ` : nothing}
+    </div>
 </li> 
 `;
+
+const replyCard = (reply) => html `
+<div>${reply.replyOwner}: ${reply.replyContent}</div>
+`
 
 
 export async function showDetails(ctx) {
@@ -122,6 +144,31 @@ export async function showDetails(ctx) {
 
     const ratingObject = createRatingObject(allRatings, ctx.user?.objectId);
 
+    const {results: currentMovieReplies} = await getSpecificReplies(id);
+    console.log(currentMovieReplies);
+
+    currentComments.map(c => c.replies = []);
+
+    for (let reply of currentMovieReplies) {
+        const parentCommentId = reply.originalComment.objectId;
+        const replyOwner = reply.owner.username;
+        const replyContent = reply.content;
+        const replyId = reply.objectId
+
+        for (let comment of currentComments) {
+            if (comment.objectId == parentCommentId) {
+                comment.replies.push({
+                    replyId,
+                    replyOwner,
+                    replyContent,
+                })
+            }
+        }
+
+    }
+
+    console.log(currentComments);
+
     ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate, true), createSubmiteHandler(onRate),
     movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser));
 
@@ -136,6 +183,39 @@ export async function showDetails(ctx) {
     const stars = document.getElementsByClassName('fa-star');
     const inputRate = document.getElementById('rate-input');
     let lastStarClicked = -1;
+
+    let replyButtons = document.getElementsByClassName('show-reply-form-button');
+
+    for (let replyButton of replyButtons) {
+        replyButton.addEventListener('click', replyButtonClicked);
+    }
+
+    function replyButtonClicked (event) {
+        let formDiv = event.target.parentElement.getElementsByClassName('comment-reply-form')[0];
+        if (formDiv.style.display == 'none' || formDiv.style.display == '') {
+            formDiv.style.display = 'block';
+        } else if (formDiv.style.display == 'block') {
+            formDiv.style.display = 'none';
+        }
+    }
+
+    let showReplyDivs = document.getElementsByClassName('show-replies-button');
+
+    for (let showDiv of showReplyDivs) {
+        const currentButton = showDiv.getElementsByTagName('button')[0];
+        currentButton.addEventListener('click', showReplies);
+    }
+
+    function showReplies (event) {
+        const replySection = event.target.parentElement.parentElement.getElementsByClassName('replies')[0];
+
+        if (replySection.style.display == 'none' || replySection.style.display == '') {
+            replySection.style.display = 'block'
+        } else if (replySection.style.display == 'block') {
+            replySection.style.display = 'none';
+        }
+
+    }
 
     for (let star of stars) {
         star.addEventListener('click', starClicked);
@@ -248,7 +328,8 @@ export async function showDetails(ctx) {
 
         console.log(event.parentElement);
         const currentUserId = ctx.user?.objectId;
-        const currentCommentId = event.parentElement.id;
+        // id is one level up in DOM tree, due to style-related changes
+        const currentCommentId = event.parentElement.parentElement.id;
         console.log(currentCommentId);
 
         const replyData = {
