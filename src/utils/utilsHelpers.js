@@ -1,3 +1,5 @@
+import { typeOfListFilter } from "./utilsConstants.js";
+
 export function createSubmiteHandler(callback, shouldClear) {
 
     return function (event) {
@@ -59,3 +61,27 @@ export function createRatingObject(listOfRatings, currentUser) {
     return result;
 
 }
+
+// 20230501 - function, which abstracts the filtering of results gotten 
+// from DB by search word and then filtered by category / filter
+export function filterDataByList (data, someList, typeOfList) {
+    
+    const result = [];
+    const searchedProperty = typeOfListFilter[typeOfList].toString();
+
+    // some 'data' received are objects with 'results' property, if from DB;
+    // other are already filtered and are in an array;
+    // TODO - unify them
+    const dataObject = data.hasOwnProperty('results') ? data.results : data;
+    
+    for (let i = 0; i < dataObject.length; i++) {
+        const currentMovie = dataObject[i];
+        if (someList.indexOf(currentMovie[searchedProperty]) >= 0) {
+            result.push(currentMovie);
+        }
+    };
+
+    return result;
+
+}
+

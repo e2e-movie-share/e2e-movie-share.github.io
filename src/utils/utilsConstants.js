@@ -25,3 +25,10 @@ export const authPlaceholderValues = {
     'password': 'p455w0rd',
     'repass': 'p455w0rd',
 }
+
+// 20230501 -> object for holding filter properties of abstract method
+// for now it is useless, but thus it is extensible in the future
+export const typeOfListFilter = {
+    'rating': 'rating',
+    'category': 'category',
+}

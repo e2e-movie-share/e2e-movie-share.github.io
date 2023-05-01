@@ -1,5 +1,6 @@
 
 import { addOwnerPointerToObject, encodeObject } from '../util.js';
+import { filterDataByList } from '../utils/utilsHelpers.js';
 import { get, post } from './api.js'
 
 const endpoints = {
@@ -61,17 +62,13 @@ export async function getMovieBySearchWord (searchWord) {
 }
 
 // TODO Make more abstract, usable for search word and any type of filter;
+// filter means 'rating' property in the DB [movieOptions - 'G', 'PG, ...]
 export async function getMovieBySearchWordAndFilter (searchWord, filterList) {
     
     const data = await get(endpoints.moviesBySearchWordRegex(searchWord));
-    const result = [];
 
-    for (let i = 0; i < data.results.length; i++) {
-        const currentMovie = data.results[i];
-        if (filterList.indexOf(currentMovie.rating) >= 0) {
-            result.push(currentMovie);
-        }
-    }
+    const result = filterDataByList(data, filterList, 'rating');
+
     return result;
 
 }
@@ -94,15 +91,10 @@ export async function getMoviesByCategory (categoryList) {
 export async function getMoviesByCategoryAndFilter (categoryList, filterList) {
 
     const data = await get(endpoints.moviesByCategory(categoryList));
-    const result = [];
 
     // TODO make filtering more abstract; since it is used in a few places;
-    for (let i = 0; i < data.results.length; i++) {
-        const currentMovie = data.results[i];
-        if (filterList.indexOf(currentMovie.rating) >= 0) {
-            result.push(currentMovie);
-        }
-    }
+    // 20230501 -> DONE
+    const result = filterDataByList(data, filterList, 'rating');
 
     return result;
 
@@ -111,14 +103,9 @@ export async function getMoviesByCategoryAndFilter (categoryList, filterList) {
 export async function getMovieBySearchWordAndCategory (searchWord, categoryList) {
     
     const data = await get(endpoints.moviesBySearchWordRegex(searchWord));
-    const result = [];
 
-    for (let i = 0; i < data.results.length; i++) {
-        const currentMovie = data.results[i];
-        if (categoryList.indexOf(currentMovie.category) >= 0) {
-            result.push(currentMovie);
-        }
-    }
+    const result = filterDataByList(data, categoryList, 'category');
+
     return result;
 
 }
@@ -128,14 +115,7 @@ export async function getMovieByAllParameters (searchWord, categoryList, filterL
     // using this, since the searchword is the most likely to shorten the query time and narrow the results
     const data = await getMovieBySearchWordAndFilter(searchWord, filterList);
 
-    const result = [];
-
-    for (let i = 0; i < data.length; i++) {
-        const currentMovie = data[i];
-        if (categoryList.indexOf(currentMovie.category) >= 0) {
-            result.push(currentMovie);
-        }
-    }
+    const result = filterDataByList(data, categoryList, 'category');
 
     return result;
 
