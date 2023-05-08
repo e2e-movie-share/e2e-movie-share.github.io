@@ -88,7 +88,7 @@ export async function catalogView(ctx) {
 
     // a midleware was needed first ...
     let movies;
-    let isSearch = Boolean(ctx.query.search);
+    let isSearch = Object.keys(ctx.query).length > 0;
 
     // TODO make this whole mess into an abstract method;
     // also fetch queryString and the filters one time only
@@ -105,6 +105,46 @@ export async function catalogView(ctx) {
     const categories = Object.entries(movieCategories);
 
     ctx.render(catalogTemplate(movies, onSearch, isSearch, options, categories));
+
+    // 20230508 -> feed/clear the state (search params) from the URL into the forms for better UI
+    // {
+    const searchInputField = document.getElementsByClassName('search-bar')[0];
+    if (!!ctx.query.search && ctx.query.search !== searchInputField.value) {
+        searchInputField.value = ctx.query.search;
+    }
+
+    if (!!searchInputField.value && !ctx.query.search) {
+        searchInputField.value = '';
+    }
+
+    const ratingFilterInputField = document.getElementById('rating-filter');
+
+    if (ratingFilterInputField.selectedIndex >= 0 && !ctx.query.filter) {
+        ratingFilterInputField.selectedIndex = -1;
+    }
+
+    if (!!ctx.query.filter) {
+        for (let child of ratingFilterInputField) {
+            if (ctx.query.filter.split(',').indexOf(child.value) >= 0) {
+                child.selected = 'selected';
+            }
+        }
+    }
+
+    const categoryInputField = document.getElementById('category-filter');
+
+    if (categoryInputField.selectedIndex >= 0 && !ctx.query.category) {
+        categoryInputField.selectedIndex = -1;
+    }
+
+    if (!!ctx.query.category) {
+        for (let child of categoryInputField) {
+            if (ctx.query.category.split(',').indexOf(child.value) >= 0) {
+                child.selected = 'selected';
+            }
+        }
+    }
+    // }
 
     async function onSearch (event) {
         event.preventDefault();
