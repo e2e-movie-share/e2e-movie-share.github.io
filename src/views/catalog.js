@@ -3,6 +3,7 @@ import { html, nothing } from "../lib/lit-html.js";
 import { repeat } from '../lib/directives/repeat.js'
 import { getAllMovies, getMovieByAllParameters, getMovieBySearchWord, getMovieBySearchWordAndCategory, getMovieBySearchWordAndFilter, getMoviesByCategory, getMoviesByCategoryAndFilter, getMoviesByFilter } from "../data/movie.js";
 import { movieCategories, movieOptions } from "../util.js";
+import { getMoviesByParsedQuery } from "../utils/utilsHelpers.js";
 
 const catalogTemplate = (movies, onSearch, isSearch, options, categories) => html `
     <div class="search-bar-wrapper">
@@ -91,63 +92,12 @@ export async function catalogView(ctx) {
 
     // TODO make this whole mess into an abstract method;
     // also fetch queryString and the filters one time only
+    // 20230508 -> DONE; removed about 50 lines, method is now in utils
     if (!!ctx.query && Object.keys(ctx.query).length > 0) {
-
-        if (!!ctx.query.search && !ctx.query.filter && !ctx.query.category) {
-            const queryString = ctx.query.search;
-            const {results: moviesBySearchWord} = await getMovieBySearchWord(queryString);
-            movies = moviesBySearchWord;
-        } else if (!!ctx.query.search && !!ctx.query.filter && !ctx.query.category) {
-            const queryString = ctx.query.search;
-            const queryFilterList = ctx.query.filter.split(",");
-
-            const moviesBySearchWordAndFIlter = await getMovieBySearchWordAndFilter(queryString, queryFilterList);
-            movies = moviesBySearchWordAndFIlter;
-        } else if (!ctx.query.search && !!ctx.query.filter && !ctx.query.category) {
-            const queryFilterList = ctx.query.filter.split(",");
-            const {results: MoviesByFilter} = await getMoviesByFilter(queryFilterList);
-            movies = MoviesByFilter;
-        } else if (!ctx.query.search && !ctx.query.filter && !!ctx.query.category) {
-            const queryCategoryList = ctx.query.category.split(",");
-            const {results:MoviesByCategory} = await getMoviesByCategory(queryCategoryList);
-            movies = MoviesByCategory;
-        } else if (!ctx.query.search && !!ctx.query.filter && !!ctx.query.category) {
-            const queryCategoryList = ctx.query.category.split(",");
-            const queryFilterList = ctx.query.filter.split(",");
-            // IMPORTANT -> should NOT be {results:varableName},
-            // since we return an array directly from data fetching; maybe make it thus for all?
-            const MoviesByCategoryAndFilter = await getMoviesByCategoryAndFilter(
-                queryCategoryList,
-                queryFilterList
-            );
-            movies = MoviesByCategoryAndFilter;
-        } else if (!!ctx.query.search && !ctx.query.filter && !!ctx.query.category) {
-            const queryCategoryList = ctx.query.category.split(",");
-            const queryString = ctx.query.search;
-            const MoviesByCategoryAndSearchWord = await getMovieBySearchWordAndCategory(
-                queryString,
-                queryCategoryList
-            );
-            movies = MoviesByCategoryAndSearchWord;
-        } else if (!!ctx.query.search && !!ctx.query.filter && !!ctx.query.category) {
-            const queryCategoryList = ctx.query.category.split(",");
-            const queryFilterList = ctx.query.filter.split(",");
-            const queryString = ctx.query.search;
-
-            const MoviesByAllThreeFilters = await getMovieByAllParameters(
-                queryString,
-                queryCategoryList,
-                queryFilterList,
-            )
-
-            movies = MoviesByAllThreeFilters;
-
-        }
-
-
-
+        const moviesWithParams = await getMoviesByParsedQuery(ctx.query)
+        movies = moviesWithParams;
     } else {
-        const {results: allMovies} = await getAllMovies();
+        const { results: allMovies } = await getAllMovies();
         movies = allMovies;
     }
 
@@ -184,7 +134,11 @@ export async function catalogView(ctx) {
         }
 
         if (selectedOptions.length > 0 && selectedCategories.length == 0) {
-            ctx.page.redirect(`/catalog?search=${searchedWord.value}&filter=${encodeURIComponent(selectedOptions.map(e => e.value).join(","))}`);
+            ctx.page.redirect(`/catalog?search=${
+                searchedWord.value
+            }&filter=${
+                encodeURIComponent(selectedOptions.map(e => e.value).join(","))
+            }`);
             console.log(decodeURIComponent(selectedOptions.map(e => e.value).join(",")));
         } else if (selectedCategories.length > 0 && selectedOptions.length == 0) {
             ctx.page.redirect(`/catalog?search=${
@@ -200,7 +154,7 @@ export async function catalogView(ctx) {
             }&filter=${
                 encodeURIComponent(selectedOptions.map(e => e.value).join(","))
             }`);
-        }else {
+        } else {
             ctx.page.redirect(`/catalog?search=${searchedWord.value}`);
         }
 

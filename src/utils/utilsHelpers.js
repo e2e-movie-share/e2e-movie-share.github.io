@@ -1,3 +1,11 @@
+import { 
+    getMovieByAllParameters, 
+    getMovieBySearchWord, 
+    getMovieBySearchWordAndCategory, 
+    getMovieBySearchWordAndFilter, 
+    getMoviesByCategory, 
+    getMoviesByCategoryAndFilter, 
+    getMoviesByFilter } from "../data/movie.js";
 import { typeOfListFilter } from "./utilsConstants.js";
 
 export function createSubmiteHandler(callback, shouldClear) {
@@ -85,3 +93,67 @@ export function filterDataByList (data, someList, typeOfList) {
 
 }
 
+
+// 20230805 -> abstract the filtering and DB fetching; do it here, instead of in catalog
+export async function getMoviesByParsedQuery (queryObject) {
+
+    const queryString = queryObject.search;
+    const queryFilterList = queryObject.filter?.split(",");
+    const queryCategoryList = queryObject.category?.split(",");
+
+    // queryObject['search'] was always present, even if queryString is '',
+    // and the logic broke => filter the array to include only valid query params
+    const objectKeysArr = Object.keys(queryObject).filter(
+        (q) => queryObject[q] !== ''
+    );
+
+    let moviesToReturn;
+
+    if (objectKeysArr.length === 3) {
+        moviesToReturn = await getMovieByAllParameters(
+            queryString,
+            queryCategoryList,
+            queryFilterList,
+        )
+    } else if (objectKeysArr.length === 1) {
+
+        if (queryString) {
+            const {results: moviesBySearchWord} = await getMovieBySearchWord(queryString);
+            moviesToReturn = moviesBySearchWord;
+        } else if (queryCategoryList) {
+            const {results:MoviesByCategory} = await getMoviesByCategory(queryCategoryList);
+            moviesToReturn = MoviesByCategory;
+        } else if (queryFilterList) {
+            const {results: MoviesByFilter} = await getMoviesByFilter(queryFilterList);
+            moviesToReturn = MoviesByFilter;
+        }
+
+    } else if (objectKeysArr.length === 2) {
+
+        if (queryString && queryCategoryList) {
+            const MoviesByCategoryAndSearchWord = await getMovieBySearchWordAndCategory(
+                queryString,
+                queryCategoryList
+            );
+            moviesToReturn = MoviesByCategoryAndSearchWord;
+        };
+        if (queryString && queryFilterList) {
+            const moviesBySearchWordAndFIlter = await getMovieBySearchWordAndFilter(
+                queryString, 
+                queryFilterList
+            );
+            moviesToReturn = moviesBySearchWordAndFIlter;
+        };
+        if (queryCategoryList && queryFilterList) {
+            const MoviesByCategoryAndFilter = await getMoviesByCategoryAndFilter(
+                queryCategoryList,
+                queryFilterList
+            );
+            moviesToReturn = MoviesByCategoryAndFilter;
+        };
+
+    }
+
+    return moviesToReturn;
+    
+}
