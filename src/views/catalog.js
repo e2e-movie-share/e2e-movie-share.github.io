@@ -3,7 +3,7 @@ import { html, nothing } from "../lib/lit-html.js";
 import { repeat } from '../lib/directives/repeat.js'
 import { getAllMovies, getMovieByAllParameters, getMovieBySearchWord, getMovieBySearchWordAndCategory, getMovieBySearchWordAndFilter, getMoviesByCategory, getMoviesByCategoryAndFilter, getMoviesByFilter } from "../data/movie.js";
 import { movieCategories, movieOptions } from "../util.js";
-import { getMoviesByParsedQuery } from "../utils/utilsHelpers.js";
+import { constructSearchObject, createQueryListForURL, getMoviesByParsedQuery } from "../utils/utilsHelpers.js";
 
 const catalogTemplate = (movies, onSearch, isSearch, options, categories) => html `
     <div class="search-bar-wrapper">
@@ -150,53 +150,19 @@ export async function catalogView(ctx) {
         event.preventDefault();
         const searchedWord = event.target.parentElement.querySelector('input');
 
-        const filters = document.getElementById("rating-filter");
-        const selectedOptions = [];
-
-        for (let i = 0; i < filters.children.length; i++) {
-            if (filters.children[i].selected) {
-                selectedOptions.push(filters.children[i]);
-            };
-        }
-
-        const categoryFilters = document.getElementById("category-filter");
-        const selectedCategories = [];
-
-        for (let k = 0; k < categoryFilters.children.length; k++) {
-            if (categoryFilters.children[k].selected) {
-                selectedCategories.push(categoryFilters.children[k]);
-            }
-        }
+        // 20230512 -> create the query list of selected attributes in an abstract way
+        //  pass in the HTML select element -> get a list of the selected attributes
+        const selectedOptions = createQueryListForURL(document.getElementById("rating-filter"));
+        const selectedCategories = createQueryListForURL(document.getElementById("category-filter"));
 
         // remove search with empty query when pressing the button
         if (searchedWord.value == '' && selectedOptions.length == 0 && selectedCategories.length == 0) {
             return;
         }
 
-        if (selectedOptions.length > 0 && selectedCategories.length == 0) {
-            ctx.page.redirect(`/catalog?search=${
-                searchedWord.value
-            }&filter=${
-                encodeURIComponent(selectedOptions.map(e => e.value).join(","))
-            }`);
-            console.log(decodeURIComponent(selectedOptions.map(e => e.value).join(",")));
-        } else if (selectedCategories.length > 0 && selectedOptions.length == 0) {
-            ctx.page.redirect(`/catalog?search=${
-                searchedWord.value
-            }&category=${
-                encodeURIComponent(selectedCategories.map(e => e.value).join(","))
-            }`);
-        } else if (selectedCategories.length > 0 && selectedOptions.length > 0) {
-            ctx.page.redirect(`/catalog?search=${
-                searchedWord.value
-            }&category=${
-                encodeURIComponent(selectedCategories.map(e => e.value).join(","))
-            }&filter=${
-                encodeURIComponent(selectedOptions.map(e => e.value).join(","))
-            }`);
-        } else {
-            ctx.page.redirect(`/catalog?search=${searchedWord.value}`);
-        }
+        // 20230512 -> the search query string is now constructed in utils;
+        const toSearch = constructSearchObject(searchedWord, selectedOptions, selectedCategories);
+        ctx.page.redirect(toSearch);
 
     }
 

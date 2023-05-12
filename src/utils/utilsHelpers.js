@@ -156,4 +156,54 @@ export async function getMoviesByParsedQuery (queryObject) {
 
     return moviesToReturn;
     
+};
+
+
+// 20230512 -> function which constructs the searchURL for redirecting,
+// when searching in the catalog;
+export function constructSearchObject (searchQueryWord, optionRatings, categoriesList) {
+
+    let searchUrl = '';
+
+    if (optionRatings.length > 0 && categoriesList.length == 0) {
+        searchUrl = `/catalog?search=${
+            searchQueryWord.value
+        }&filter=${
+            encodeURIComponent(optionRatings.map(e => e.value).join(","))
+        }`;
+    } else if (optionRatings.length == 0 && categoriesList.length > 0) {
+        searchUrl = `/catalog?search=${
+            searchQueryWord.value
+        }&category=${
+            encodeURIComponent(categoriesList.map(e => e.value).join(","))
+        }`;
+    } else if (optionRatings.length > 0 && categoriesList.length > 0) {
+        searchUrl = `/catalog?search=${
+            searchQueryWord.value
+        }&category=${
+            encodeURIComponent(categoriesList.map(e => e.value).join(","))
+        }&filter=${
+            encodeURIComponent(optionRatings.map(e => e.value).join(","))
+        }`;
+    } else {
+        searchUrl = `/catalog?search=${searchQueryWord.value}`;
+    }
+
+    return searchUrl;
+
+};
+
+
+export function createQueryListForURL (selectHTMLElement) {
+
+    let arr = [];
+
+    for (let i = 0; i < selectHTMLElement.children.length; i++) {
+        if (selectHTMLElement.children[i].selected) {
+            arr.push(selectHTMLElement.children[i]);
+        };
+    }
+
+    return arr;
+
 }
