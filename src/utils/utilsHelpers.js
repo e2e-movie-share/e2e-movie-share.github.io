@@ -227,3 +227,35 @@ export function twoWayBindSelectElementDOMandURL (htmlSelect, queryListString) {
     }
 
 };
+
+
+
+// 20230513 -> construct array with comments and needed data and methods in it for details.js
+export function constructCommentArray (comments, movieOwnerId, onReply, currentReplies) {
+
+    comments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movieOwnerId));
+    comments.map(c => c.onCommentReply = createSubmiteHandler(onReply));
+    comments.map(c => c.replies = []);
+
+    for (let reply of currentReplies) {
+        console.log(reply);
+        const parentCommentId = reply.originalComment.objectId;
+        const replyOwner = reply.owner.username;
+        const replyContent = reply.content;
+        const replyId = reply.objectId
+
+        for (let comment of comments) {
+            if (comment.objectId == parentCommentId) {
+                comment.replies.push({
+                    replyId,
+                    replyOwner,
+                    replyContent,
+                })
+            }
+        }
+
+    }
+
+    return comments;
+
+};

@@ -7,6 +7,7 @@ import { repeat } from '../lib/directives/repeat.js'
 import { classMap } from '../lib/directives/class-map.js'
 import { deleteRating, getMovieRatingsById, postRating } from "../data/movieRating.js";
 import { getSpecificReplies, postReply } from "../data/replies.js";
+import { constructCommentArray } from "../utils/utilsHelpers.js";
 
 const detailTemplate = (
     onComment, onRate, movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser
@@ -127,52 +128,48 @@ const replyCard = (reply) => html `
 
 
 export async function showDetails(ctx) {
+    
 
+    // PRE-RENDER (fetch and set up needed data)
     const id = ctx.params.id;
     const movie = await getMovieById(id);
-
-    // clear !
-    const result = await getSpecificComments(id);
-    const currentComments = result.results;
     const hasUser = ctx.user;
 
-    currentComments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movie.owner.objectId));
-    currentComments.map(c => c.onCommentReply = createSubmiteHandler(onReply));
-
-    // ::
-    let allRatings = await getMovieRatingsById(id);
-    allRatings = allRatings.results;
-
+    // construct rating object for current movie
+    let {results: allRatings} = await getMovieRatingsById(id);
     const ratingObject = createRatingObject(allRatings, ctx.user?.objectId);
 
+    // Fetch comments and replies for current movie;
+    // comments are named commentsOnly, since currentComments was reserved
+    // for the passed in transformed function into ctx.render
+    const {results: commentsOnly} = await getSpecificComments(id);
     const {results: currentMovieReplies} = await getSpecificReplies(id);
-    console.log(currentMovieReplies);
 
-    currentComments.map(c => c.replies = []);
+    // 20230513 -> construct comments array with needed methods and functions,
+    // as well as replies in utils; name is kept as currentComments 
+    // since it is needed like that in the template
+    const currentComments = constructCommentArray(
+        commentsOnly, 
+        movie.owner.objectId, 
+        onReply, 
+        currentMovieReplies, 
+    );
 
-    for (let reply of currentMovieReplies) {
-        const parentCommentId = reply.originalComment.objectId;
-        const replyOwner = reply.owner.username;
-        const replyContent = reply.content;
-        const replyId = reply.objectId
 
-        for (let comment of currentComments) {
-            if (comment.objectId == parentCommentId) {
-                comment.replies.push({
-                    replyId,
-                    replyOwner,
-                    replyContent,
-                })
-            }
-        }
+    // RENDER
+    ctx.render(detailTemplate(
+        createSubmiteHandler(onCommentCreate, true), 
+        createSubmiteHandler(onRate),
+        movie, 
+        currentComments, 
+        ratingObject, 
+        movieOptions, 
+        movieCategories, 
+        hasUser
+    ));
+    
 
-    }
-
-    console.log(currentComments);
-
-    ctx.render(detailTemplate(createSubmiteHandler(onCommentCreate, true), createSubmiteHandler(onRate),
-    movie, currentComments, ratingObject, movieOptions, movieCategories, hasUser));
-
+    // POST-RENDER (DOM manipulation and listeners, forms)
     const commentInput = document.getElementsByTagName('input')[0];
     commentInput.addEventListener('focusin', revealButtons);
     commentInput.addEventListener('input', onCommentInput)
