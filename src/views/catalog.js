@@ -3,7 +3,7 @@ import { html, nothing } from "../lib/lit-html.js";
 import { repeat } from '../lib/directives/repeat.js'
 import { getAllMovies, getMovieByAllParameters, getMovieBySearchWord, getMovieBySearchWordAndCategory, getMovieBySearchWordAndFilter, getMoviesByCategory, getMoviesByCategoryAndFilter, getMoviesByFilter } from "../data/movie.js";
 import { movieCategories, movieOptions } from "../util.js";
-import { constructSearchObject, createQueryListForURL, getMoviesByParsedQuery } from "../utils/utilsHelpers.js";
+import { constructSearchObject, createQueryListForURL, getMoviesByParsedQuery, twoWayBindSelectElementDOMandURL } from "../utils/utilsHelpers.js";
 
 const catalogTemplate = (movies, onSearch, isSearch, options, categories) => html `
     <div class="search-bar-wrapper">
@@ -117,33 +117,16 @@ export async function catalogView(ctx) {
         searchInputField.value = '';
     }
 
+    // 20230513 -> abstract away the two way binding between DOM select elements and url query params
+
+    // ensure DOM state of ratings is the one from URL
     const ratingFilterInputField = document.getElementById('rating-filter');
+    twoWayBindSelectElementDOMandURL(ratingFilterInputField, ctx.query.filter);
 
-    if (ratingFilterInputField.selectedIndex >= 0 && !ctx.query.filter) {
-        ratingFilterInputField.selectedIndex = -1;
-    }
-
-    if (!!ctx.query.filter) {
-        for (let child of ratingFilterInputField) {
-            if (ctx.query.filter.split(',').indexOf(child.value) >= 0) {
-                child.selected = 'selected';
-            }
-        }
-    }
-
+    // ensure DOM state of categories is the one from URL
     const categoryInputField = document.getElementById('category-filter');
+    twoWayBindSelectElementDOMandURL(categoryInputField, ctx.query.category);
 
-    if (categoryInputField.selectedIndex >= 0 && !ctx.query.category) {
-        categoryInputField.selectedIndex = -1;
-    }
-
-    if (!!ctx.query.category) {
-        for (let child of categoryInputField) {
-            if (ctx.query.category.split(',').indexOf(child.value) >= 0) {
-                child.selected = 'selected';
-            }
-        }
-    }
     // }
 
     async function onSearch (event) {

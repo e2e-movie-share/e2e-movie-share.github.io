@@ -131,6 +131,7 @@ export async function showDetails(ctx) {
     const id = ctx.params.id;
     const movie = await getMovieById(id);
 
+    // clear !
     const result = await getSpecificComments(id);
     const currentComments = result.results;
     const hasUser = ctx.user;
@@ -138,7 +139,7 @@ export async function showDetails(ctx) {
     currentComments.map(c => c.isOwnerOfMovie = Boolean(c.owner.objectId == movie.owner.objectId));
     currentComments.map(c => c.onCommentReply = createSubmiteHandler(onReply));
 
-
+    // ::
     let allRatings = await getMovieRatingsById(id);
     allRatings = allRatings.results;
 

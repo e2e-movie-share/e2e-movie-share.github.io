@@ -206,4 +206,24 @@ export function createQueryListForURL (selectHTMLElement) {
 
     return arr;
 
-}
+};
+
+
+export function twoWayBindSelectElementDOMandURL (htmlSelect, queryListString) {
+
+    if (htmlSelect.selectedIndex >= 0 && !queryListString) {
+        htmlSelect.selectedIndex = -1;
+    };
+
+    if (!!queryListString) {
+
+        const listOfParams = queryListString.split(',');
+
+        for (let child of htmlSelect) {
+            if (listOfParams.indexOf(child.value) >= 0) {
+                child.selected = 'selected';
+            }
+        }
+    }
+
+};
