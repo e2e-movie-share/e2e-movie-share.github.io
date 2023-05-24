@@ -170,7 +170,11 @@ export async function showDetails(ctx) {
     
 
     // POST-RENDER (DOM manipulation and listeners, forms)
-    const commentInput = document.getElementsByTagName('input')[0];
+
+    // 20230524 -> getting the input by TagName('input')[0] was causing a bug,
+    // since the received element was the rating input field -->
+    // Changed to getElementsByName('commentText')[0] for better consistency
+    const commentInput = document.getElementsByName('commentText')[0];
     commentInput.addEventListener('focusin', revealButtons);
     commentInput.addEventListener('input', onCommentInput)
     const buttons = document.getElementsByClassName('comment-submit-button');
@@ -313,7 +317,8 @@ export async function showDetails(ctx) {
         }
     }
 
-    // started doing reply functionality, only posting is finished
+    // started doing reply functionality, only posting is finished - 20230524 - that is a lie,
+    // replies are also shown 
     async function onReply ({ replyText }, event) {
 
         if (replyText == '') {
